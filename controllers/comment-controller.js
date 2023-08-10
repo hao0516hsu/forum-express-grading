@@ -15,7 +15,7 @@ const commentController = {
         if (!restaurant) throw new Error("Restaurant didn't exist!")
 
         return Comment.create({
-          text,
+          text: text.substring(0, 150),
           userId,
           restaurantId
         })
