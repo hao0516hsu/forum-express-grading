@@ -9,16 +9,28 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
           <ul class="navbar-nav ms-auto mb-2 mb-md-0">
-            {{#if user.isAdmin}}
+            {{#if user.isCurrUserAdmin}}
+              <li class="nav-item">
+                <a href="/admin" class="nav-link">Admin 後台</a>
+              </li>
+            {{else if user.isAdmin}}
               <li class="nav-item">
                 <a href="/admin" class="nav-link">Admin 後台</a>
               </li>
             {{/if}}
             <li class="nav-item d-inline-flex align-items-center">
+              {{#ifCond user.isCurrentUser false}}
+              <span class="text-white nav-link">Hi, {{ user.currUserEmail }}</span>
+              {{else}}
               <span class="text-white nav-link">Hi, {{ user.email }}</span>
+              {{/ifCond}}
             </li>
             <li class="nav-item">
+              {{#ifCond user.isCurrentUser false}}
+              <a href="/users/{{user.currUserId}}" class="text-white nav-link mx-2">Profile</a>
+              {{else}}
               <a href="/users/{{user.id}}" class="text-white nav-link mx-2">Profile</a>
+              {{/ifCond}}
             </li>
             <li class="nav-item">
               <a href="/logout"><button class="btn btn-outline-success my-sm-0 my-2">Logout</button></a>

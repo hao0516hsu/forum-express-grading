@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs')
 const db = require('../models')
-const { User, Restaurant, Comment, Favorite, Like, Followship } = db
+const { User, Restaurant, Comment, Favorite, Like, Followship, sequelize } = db
 const { imgurFileHandler } = require('../helpers/file-helpers')
 
 const userController = {
@@ -41,12 +41,24 @@ const userController = {
   getUser: (req, res, next) => {
     return User.findByPk(req.params.id, {
       nest: true,
-      include: [{ model: Comment, include: Restaurant }]
+      include: [
+        { model: Comment, attributes: ['restaurant_id'], include: Restaurant },
+        { model: User, attributes: ['id', 'image'], as: 'Followers' },
+        { model: User, attributes: ['id', 'image'], as: 'Followings' },
+        { model: Restaurant, as: 'FavoritedRestaurants' }
+      ],
+      group: [sequelize.col('Comments.restaurant_id'), sequelize.col('Followings.id'), sequelize.col('Followers.id'), sequelize.col('FavoritedRestaurants.id')]
     })
       .then(user => {
         if (!user) throw new Error("User didn't exist!")
-
-        res.render('users/profile', { user: user.toJSON() })
+        const result = {
+          ...user.toJSON(),
+          isCurrentUser: req.user && user.id === req.user.id,
+          currUserId: req.user.id,
+          isCurrUserAdmin: req.user.isAdmin,
+          currUserEmail: req.user.email
+        }
+        res.render('users/profile', { user: result })
       })
       .catch(err => next(err))
   },
@@ -168,7 +180,8 @@ const userController = {
         const result = users.map(user => ({
           ...user.toJSON(),
           followerCount: user.Followers.length,
-          isFollowed: req.user.Followings.some(f => f.id === user.id)
+          isFollowed: req.user.Followings.some(f => f.id === user.id),
+          isMyself: user.id === req.user.id
         }))
           .sort((a, b) => b.followerCount - a.followerCount)
         res.render('top-users', { users: result })
@@ -177,6 +190,7 @@ const userController = {
   },
   addFollowing: (req, res, next) => {
     const { userId } = req.params
+    if (req.user.id.toString() === req.params.userId) throw new Error('You are not allowed to follow yourself!')
 
     return Promise.all([
       User.findByPk(req.user.id),

@@ -1,7 +1,9 @@
-<div class="card mb-3 mx-auto" style="max-width: 800px">
+<div class="card mb-3 mx-auto">
   <div class="row g-0">
     <div class="col-md-4">
-      <img src="{{user.image}}" class="img-fluid rounded-start" alt="user_photo" style="width: 250px; max-height: 250px margin-bottom: 25px; transition: opacity 0.5s; opacity:0;" onload="this.style.opacity=1;">
+      <img src="{{user.image}}" class="img-fluid rounded-start" alt="user_photo"
+        style="width: 250px; max-height: 250px margin-bottom: 25px; transition: opacity 0.5s; opacity:0;"
+        onload="this.style.opacity=1;">
     </div>
     <div class="col-md-8">
       <div class="card-body">
@@ -9,29 +11,95 @@
           <li><strong>{{user.name}}</strong></li>
           <li>{{user.email}}</li>
           <li><strong>{{user.Comments.length}}</strong> 已評論餐廳</li>
+          <li><strong>{{user.FavoritedRestaurants.length}}</strong> 收藏的餐廳</li>
+          <li><strong>{{user.Followings.length}}</strong> followings (追蹤者)</li>
+          <li><strong>{{user.Followers.length}}</strong> followers (追隨者)</li>
         </ul>
+        {{#if user.isCurrentUser}}
         <a class="btn btn-outline-primary" href="/users/{{user.id}}/edit" role="button">Edit</a>
+        {{/if}}
       </div>
     </div>
-  </div>    
+  </div>
 </div>
 
-<div class="card">
-  <div class="card-header">
-    {{#ifCond user.Comments.length 0}}
-      <h5 class="mb-3">目前沒有評論</h5>
+<div class="row">
+  {{!-- User一列 --}}
+  <div class="col-md-4">
+    {{!-- 追蹤名單(Following) --}}
+    <div class="card">
+      <div class="card-header">
+        {{#ifCond user.Followings.length 0}}
+        <h5 class="mb-3">目前沒有追蹤者</h5>
+      </div>
+        {{else}}
+        <h5 class="mb-3"><strong>{{user.Followings.length}}</strong> followings (追蹤者)</h5>
+      </div>
+      <div class="card-body">
+        {{#each user.Followings}}
+        <a href="/users/{{this.id}}">
+        <img src="{{this.image}}" alt="User-image" width="80" height="80">
+        </a>
+        {{/each}}
+      </div>
+      {{/ifCond}}
     </div>
-    {{else}}
-      <h5 class="mb-3"><strong>{{user.Comments.length}}</strong> 已評論餐廳</h5>
-    </div>    
-
-    <div class="card-body">
-    {{#each user.Comments}}
-    <a href="/restaurants/{{this.Restaurant.id}}">
-      <img src="{{this.Restaurant.image}}" alt="Restaurant-image" width="80" height="80">
-    </a>
-    {{/each}}
-    </div>   
-    {{/ifCond}}
+    {{!-- 追隨名單(Follower) --}}
+    <div class="card mt-4">
+      <div class="card-header">
+        {{#ifCond user.Followers.length 0}}
+        <h5 class="mb-3">目前沒有追隨者</h5>
+      </div>
+        {{else}}
+        <h5 class="mb-3"><strong>{{user.Followers.length}}</strong> followers (追隨者)</h5>
+      </div>
+      <div class="card-body">
+        {{#each user.Followers}}
+        <a href="/users/{{this.id}}">
+        <img src="{{this.image}}" alt="User-image" width="80" height="80">
+        </a>
+        {{/each}}
+      </div>
+      {{/ifCond}}
+    </div>
+  </div>
+  {{!-- Restaurant一列 --}}
+  <div class="col-md-8">
+    {{!-- 評論餐廳 --}}
+    <div class="card">
+      <div class="card-header">
+        {{#ifCond user.Comments.length 0}}
+        <h5 class="mb-3">目前沒有評論</h5>
+      </div>
+        {{else}}
+        <h5 class="mb-3"><strong>{{user.Comments.length}}</strong> 已評論餐廳</h5>
+      </div>
+      <div class="card-body">
+        {{#each user.Comments}}
+        <a href="/restaurants/{{this.Restaurant.id}}">
+        <img src="{{this.Restaurant.image}}" alt="Restaurant-image" width="80" height="80">
+        </a>
+        {{/each}}
+      </div>
+      {{/ifCond}}
+    </div>
+    {{!-- 收藏餐廳 --}}
+    <div class="card mt-4">
+      <div class="card-header">
+        {{#ifCond user.FavoritedRestaurants.length 0}}
+        <h5 class="mb-3">目前沒有收藏的餐廳</h5>
+      </div>
+        {{else}}
+        <h5 class="mb-3"><strong>{{user.FavoritedRestaurants.length}}</strong> 收藏的餐廳</h5>
+      </div>
+      <div class="card-body">
+        {{#each user.FavoritedRestaurants}}
+        <a href="/restaurants/{{this.id}}">
+        <img src="{{this.image}}" alt="Restaurant-image" width="80" height="80">
+        </a>
+        {{/each}}
+      </div>
+      {{/ifCond}}
+    </div>
+  </div>
 </div>
-
