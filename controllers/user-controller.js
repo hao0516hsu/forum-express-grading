@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs')
 const db = require('../models')
-const { User, Restaurant, Comment, Favorite, Like, Followship, sequelize } = db
+const { User, Restaurant, Comment, Favorite, Like, Followship } = db
 const { imgurFileHandler } = require('../helpers/file-helpers')
 
 const userController = {
@@ -41,16 +41,17 @@ const userController = {
   getUser: (req, res, next) => {
     return User.findByPk(req.params.id, {
       nest: true,
+      attributes: ['id', 'image', 'name', 'email'],
       include: [
-        { model: Comment, attributes: ['restaurant_id'], include: Restaurant },
+        { model: Comment, attributes: ['restaurant_id'], include: { model: Restaurant, attributes: ['id', 'image'] } },
         { model: User, attributes: ['id', 'image'], as: 'Followers' },
         { model: User, attributes: ['id', 'image'], as: 'Followings' },
-        { model: Restaurant, as: 'FavoritedRestaurants' }
-      ],
-      group: [sequelize.col('Comments.restaurant_id'), sequelize.col('Followings.id'), sequelize.col('Followers.id'), sequelize.col('FavoritedRestaurants.id')]
+        { model: Restaurant, attributes: ['id', 'image'], as: 'FavoritedRestaurants' }
+      ]
     })
       .then(user => {
         if (!user) throw new Error("User didn't exist!")
+
         const result = {
           ...user.toJSON(),
           isCurrentUser: req.user && user.id === req.user.id,
@@ -58,6 +59,19 @@ const userController = {
           isCurrUserAdmin: req.user.isAdmin,
           currUserEmail: req.user.email
         }
+        // 建立空物件存Comment的restaurant_id
+        const commentRestId = {}
+        // 依序判斷result.Comment的restaurant_id
+        // 若restaurant_id首次出現，回傳true，新增restaurant_id: true的資料；
+        // 若相同restaurant_id再次出現，回傳false，filter會將之排除
+        const filteredItems = result.Comments.filter(item => {
+          if (!commentRestId[item.restaurant_id]) {
+            commentRestId[item.restaurant_id] = true
+            return true
+          }
+          return false
+        })
+        result.Comments = filteredItems
         res.render('users/profile', { user: result })
       })
       .catch(err => next(err))
