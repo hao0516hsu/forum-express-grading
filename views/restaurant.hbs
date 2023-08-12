@@ -59,7 +59,7 @@
 <form action="/comments" method="POST">
   <div class="form-row mb-3">
     <label class="form-label" for="text">留下評論(150字以內)：</label>
-    <textarea class="form-control" id="text" name="text" rows="3"></textarea>
+    <textarea class="form-control" id="text" name="text" rows="3" maxlength="150" pattern=".{0,150}"></textarea>
   </div>
   <input type="hidden" name="restaurantId" value="{{restaurant.id}}" />
   <button type="submit" class="btn btn-primary">Submit</button>

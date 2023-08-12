@@ -13,9 +13,11 @@ const commentController = {
       .then(([user, restaurant]) => {
         if (!user) throw new Error("User didn't exist!")
         if (!restaurant) throw new Error("Restaurant didn't exist!")
+        // 輸入字元長度超過150，就拋錯
+        if (text.length > 150) throw new Error('Comment space is limited to 150 characters')
 
         return Comment.create({
-          text: text.substring(0, 150),
+          text,
           userId,
           restaurantId
         })
